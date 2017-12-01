@@ -1,0 +1,11 @@
+version: '3'
+services:
+  http:
+    build: ./docker
+    ports:
+     - "5000:5000"
+    volumes:
+     - .:/app
+    environment:
+     - PYTHONPATH=/app
+    command: uwsgi --http :5000 -w telenot.web:app --need-app
