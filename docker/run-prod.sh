@@ -1,5 +1,5 @@
 #!/bin/sh
-data=$1
+data=$(realpath $1)
 curdir=$(realpath $(dirname $0))
 src=$(realpath $curdir/..)
 version=$(sh $curdir/gen-ver.sh)
