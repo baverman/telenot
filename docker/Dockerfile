@@ -1,10 +1,12 @@
 # Base image with os requirements
 FROM ubuntu:17.04 as base
 
+ENV LANG=C.UTF-8
+
 RUN apt-get update -y \
  && apt-get -y install --no-install-recommends \
         python3.6 libpython3.6 libffi6 openssl \
-        ca-certificates libpcre3 wget \
+        ca-certificates libpcre3 wget tzdata \
  && ln -sf /usr/bin/python3.6 /usr/bin/python
 
 
