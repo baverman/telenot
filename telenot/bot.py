@@ -131,7 +131,7 @@ def handle_update(update):
     elif cmd == '/remind':
         handle_remind(msg, user_id, chat_id, rest)
     else:
-        print(update)
+        log.info('Unknown update %r', update)
 
 
 def handle_tz(msg, user_id, chat_id, text):

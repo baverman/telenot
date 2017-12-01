@@ -6,6 +6,7 @@ services:
      - "5000:5000"
     volumes:
      - .:/app
+    working_dir: /app
     environment:
-     - PYTHONPATH=/app
-    command: uwsgi --http :5000 -w telenot.web:app --need-app
+        LANG: "C.UTF-8"
+    command: uwsgi --ini /app/uwsgi.ini

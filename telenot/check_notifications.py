@@ -1,4 +1,5 @@
 import sys
+import time
 import logging
 sys.path.insert(0, '.')
 
@@ -9,8 +10,11 @@ log = logging.getLogger('telenot.notifications')
 
 if __name__ == '__main__':
     try:
-        bot.check_notifications()
+        for _ in range(1000):
+            try:
+                bot.check_notifications()
+            except Exception:
+                log.exception('Check notification error')
+            time.sleep(60)
     except KeyboardInterrupt:
         pass
-    except Exception:
-        log.exception('Check notification error')
