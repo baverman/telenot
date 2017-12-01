@@ -150,7 +150,7 @@ def handle_remind(msg, user_id, chat_id, text):
 
     is_relative, day, tm, message = parse_reminder(text)
 
-    tz_name = reminder.get_user_timezone(user_id) or 'Moscow/Europe'
+    tz_name = reminder.get_user_timezone(user_id) or 'Europe/Moscow'
     tz = pytz.timezone(tz_name)
 
     now = pytz.utc.localize(datetime.utcnow()).astimezone(tz)
