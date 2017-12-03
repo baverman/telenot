@@ -1,11 +1,10 @@
-import os
-
-import logging
 from flaskish import Flask
 
 import settings
 
 app = Flask('telenot')
+
+# Provide additional context for errors inside request scope
 if settings.SENTRY:
     from raven.contrib.flask import Sentry
     sentry = Sentry(app, client=settings.sentry_client)
