@@ -26,12 +26,23 @@ if 'CONFIG' in os.environ:
 if os.path.exists(jroot('settings', 'local.py')):
     from .local import *
 
-# check required settings
+# Check required settings
 invalid_opts = [k for k, v in globals().items() if v == 'UNDEFINED']
 if invalid_opts:
     raise RuntimeError('Following options must be defined: {}'.format(sorted(invalid_opts)))
 
+# Configure logging
 if LOGGING:
     logging.dictConfig(LOGGING)
 else:
     logging.basicConfig(level=LOGGING_LEVEL)
+
+# Configure Sentry
+if SENTRY:
+    from raven import Client
+    from raven.handlers.logging import SentryHandler
+
+    sentry_client = Client(SENTRY)
+    sentry_handler = SentryHandler(sentry_client)
+    sentry_handler.setLevel('ERROR')
+    logging.getLogger().addHandler(sentry_handler)

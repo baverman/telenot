@@ -1,5 +1,6 @@
 from __future__ import print_function
 from functools import wraps
+import logging
 
 try:
     import ujson as json
@@ -71,6 +72,7 @@ class Flask(_Flask):
         _Flask.__init__(self, *args, **kwargs)
         self.url_map.strict_slashes = False
         self.endpoint_counter = 0
+        self._logger = logging.getLogger(self.logger_name)
 
     def route(self, rule, endpoint=None, weight=None, **options):
         if weight is not None:

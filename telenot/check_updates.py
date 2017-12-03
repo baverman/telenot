@@ -1,4 +1,5 @@
 import sys
+import time
 import logging
 sys.path.insert(0, '.')
 
@@ -11,7 +12,12 @@ if __name__ == '__main__':
     offset = None
     try:
         for _ in range(1000):
-            offset, result = bot.check_updates(offset=offset, timeout=10)
-            bot.handle_updates(result)
+            try:
+                offset, result = bot.check_updates(offset=offset, timeout=10)
+            except Exception:
+                log.exception('Get updates error')
+                time.sleep(5)
+            else:
+                bot.handle_updates(result)
     except KeyboardInterrupt:
         pass
