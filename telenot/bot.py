@@ -15,6 +15,7 @@ request_session = requests.Session()
 DAYS = {
     'today': 0,
     'tomorrow': 1,
+    '0': 0
 }
 
 t_date = oneof(Date('%d') | (lambda d: (0, d.day)),
