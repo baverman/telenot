@@ -7,21 +7,37 @@ from .db import session
 from .db.models import Reminder, Status, Timezone
 
 
-def make_reminder(user_id, notify_at, message, commit=True):
+def make(user_id, notify_at, message, commit=True):
     r = Reminder(user_id=user_id, notify_at=notify_at, message=message)
     session.add(r)
     commit and session.commit()
     return r
 
 
-def get_ready_reminders(now=None, threshold=600):
+def modify(user_id, reminder_id, notify_at=None, message=None, commit=True):
+    params = {'notify_at': notify_at, 'message': message, 'status': Status.PENDING}
+    params = {k: v for k, v in params.items() if v is not None}
+    (session.query(Reminder)
+     .filter_by(user_id=user_id, id=reminder_id)
+     .update(params, synchronize_session=False))
+    commit and session.commit()
+
+
+def delete(user_id, reminder_id, commit=True):
+    (session.query(Reminder)
+     .filter_by(user_id=user_id, id=reminder_id)
+     .delete(synchronize_session=False))
+    commit and session.commit()
+
+
+def get_ready_to_notificate(now=None, threshold=600):
     now = now or time.time()
     return (session.query(Reminder)
             .filter_by(status=Status.PENDING)
             .filter(Reminder.notify_at.between(now - threshold, now))).all()
 
 
-def complete_reminders(reminder_ids, commit=True):
+def complete(reminder_ids, commit=True):
     if not reminder_ids:
         return
 

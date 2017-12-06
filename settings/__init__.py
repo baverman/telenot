@@ -10,12 +10,6 @@ def update_globals(data):
 # Default settings
 from settings.default import *
 
-# Settings from settings.$PROFILE module
-if 'PROFILE' in os.environ:
-    import importlib
-    mod = importlib.import_module('settings.{}'.format(os.environ['PROFILE']))
-    update_globals(vars(mod))
-
 # Settings from $CONFIG file
 if 'CONFIG' in os.environ:
     import runpy

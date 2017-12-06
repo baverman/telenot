@@ -1,7 +1,0 @@
-Host: 127.0.0.1:8000
-
-GET /test
-
-GET /
-
-GET /error

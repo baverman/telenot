@@ -29,7 +29,7 @@ def test_notification_datetime():
     l = localizer('Europe/Moscow')
     now = l(2017, 9, 13, 18)
 
-    assert bot.notification_datetime(now, True, (0, 3), (20, 10)) == l(2017, 9, 16, 20, 10)
+    assert bot.notification_datetime(now, True,  3, (20, 10)) == l(2017, 9, 16, 20, 10)
     assert bot.notification_datetime(now, False, (10, 3), (20, 10)) == l(2017, 10, 3, 20, 10)
     assert bot.notification_datetime(now, False, (8, 3), (20, 10)) == l(2018, 8, 3, 20, 10)
 

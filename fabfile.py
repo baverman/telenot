@@ -48,7 +48,7 @@ def pack_backend():
     hsh = image_hash()
     local(f'''
         echo {hsh} > image_hash
-        ( git ls-files && echo image_hash ) | tar cz -f /tmp/backend.tar.gz -T -
+        ( git ls-files && echo image_hash ) | tar czf /tmp/backend.tar.gz -T -
      ''')
 
 
@@ -69,9 +69,18 @@ def restart():
         docker stop -t 10 {PRJ_NAME}-http
         docker rm {PRJ_NAME}-http || true
         cd {PRJ_NAME}
-        docker run -d --name {PRJ_NAME}-http -e CONFIG=/data/config.py \\
+        docker run -d --name {PRJ_NAME}-http -p 5000:5000 -e CONFIG=/data/config.py \\
                    -v $PWD/app:/app -v $PWD/data:/data -w /app -u $UID \\
                    {PRJ_NAME}:`cat app/image_hash` uwsgi --ini /app/uwsgi.ini
         sleep 3
         docker logs --tail 10 {PRJ_NAME}-http
+    ''')
+
+
+def shell():
+    run(f'''
+        cd {PRJ_NAME}
+        docker run --rm -e CONFIG=/data/config.py -it \\
+                   -v $PWD/app:/app -v $PWD/data:/data -w /app -u $UID \\
+                   {PRJ_NAME}:`cat app/image_hash` bash
     ''')

@@ -7,3 +7,4 @@ SENTRY = None  # Sentry DSN
 
 # required settings
 TELEGRAM_TOKEN = 'UNDEFINED'
+SECRET = 'UNDEFINED'

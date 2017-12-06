@@ -7,7 +7,7 @@ from covador import Date, Time, oneof
 from covador.utils import pipe
 
 import settings
-from . import reminder
+from . import reminder, auth
 
 log = logging.getLogger('telenot.bot')
 request_session = requests.Session()
@@ -87,7 +87,7 @@ def check_updates(offset=None, timeout=None):
 
 
 def check_notifications():
-    reminders = reminder.get_ready_reminders(threshold=86400)
+    reminders = reminder.get_ready_to_notificate(threshold=86400)
     if not reminders:
         return
 
@@ -99,7 +99,7 @@ def check_notifications():
         except Exception:
             log.exception('Error during handling notification')
 
-    reminder.complete_reminders([r.id for r in completed])
+    reminder.complete([r.id for r in completed])
 
 
 def send_message(chat_id, text, **params):
@@ -131,6 +131,8 @@ def handle_update(update):
         handle_tz(msg, user_id, chat_id, rest)
     elif cmd == '/remind':
         handle_remind(msg, user_id, chat_id, rest)
+    elif cmd == '/apikey':
+        handle_apikey(msg, user_id, chat_id, rest)
     else:
         log.info('Unknown update %r', update)
 
@@ -158,5 +160,10 @@ def handle_remind(msg, user_id, chat_id, text):
     next_notification = notification_datetime(now, is_relative, day, tm)
 
     ts = int(next_notification.astimezone(pytz.utc).timestamp())
-    reminder.make_reminder(user_id, ts, message)
+    reminder.make(user_id, ts, message)
     send_message(chat_id, 'Next reminder at {}'.format(next_notification))
+
+
+def handle_apikey(msg, user_id, chat_id, text):
+    apikey = auth.make_apikey(user_id)
+    send_message(chat_id, 'Your api key is {}'.format(apikey))

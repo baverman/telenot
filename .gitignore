@@ -3,3 +3,4 @@
 /*.db
 /settings/local.py
 /image_hash
+/*.http

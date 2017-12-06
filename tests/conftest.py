@@ -36,6 +36,7 @@ def import_as(name):
 class Settings:
     CORRECT_SETTING = True  # ensure we do not use invalid settings
     DATABASE_URI = 'sqlite:///test.db'
+    SECRET = 'boo'
 
 
 import pytest
