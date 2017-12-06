@@ -2,11 +2,12 @@ from datetime import datetime
 from hashlib import md5
 from fabric.api import run, local, env, get, put, runs_once, execute
 
-PROJECT = 'telenot'
+env.hosts = ['pg.remote']
+PRJ_NAME = 'telenot'
 
 
 def init():
-    run(f'mkdir -p ~/{PROJECT}/images ~/{PROJECT}/data')
+    run(f'mkdir -p ~/{PRJ_NAME}/images ~/{PRJ_NAME}/data')
 
 
 def image_hash():
@@ -20,26 +21,26 @@ def image_hash():
 def prepare_image():
     hsh = image_hash()
     local(f'''
-        docker inspect {PROJECT}:{hsh} > /dev/null || docker build -t {PROJECT}:{hsh} docker
-        docker save {PROJECT}:{hsh} | gzip -1 > /tmp/image.tar.gz
+        docker inspect {PRJ_NAME}:{hsh} > /dev/null || docker build -t {PRJ_NAME}:{hsh} docker
+        docker save {PRJ_NAME}:{hsh} | gzip -1 > /tmp/image.tar.gz
     ''')
 
 
 def push_image():
     hsh = image_hash()
     execute(prepare_image)
-    local(f'rsync -P /tmp/image.tar.gz {env.host}:{PROJECT}/images/{hsh}.tar.gz')
-    run(f'docker load -i {PROJECT}/images/{hsh}.tar.gz')
+    local(f'rsync -P /tmp/image.tar.gz {env.host}:{PRJ_NAME}/images/{hsh}.tar.gz')
+    run(f'docker load -i {PRJ_NAME}/images/{hsh}.tar.gz')
 
 
-def backup(fname=f'/tmp/{PROJECT}-backup.tar.gz'):
-    run(f'tar -C {PROJECT}/data -czf /tmp/backup.tar.gz .')
+def backup(fname=f'/tmp/{PRJ_NAME}-backup.tar.gz'):
+    run(f'tar -C {PRJ_NAME}/data -czf /tmp/backup.tar.gz .')
     get('/tmp/backup.tar.gz', fname)
 
 
-def restore(fname=f'/tmp/{PROJECT}-backup.tar.gz'):
+def restore(fname=f'/tmp/{PRJ_NAME}-backup.tar.gz'):
     put(fname, '/tmp/backup.tar.gz')
-    run(f'tar -C {PROJECT}/data xf /tmp/backup.tar.gz .')
+    run(f'tar -C {PRJ_NAME}/data xf /tmp/backup.tar.gz .')
 
 
 @runs_once
@@ -54,9 +55,9 @@ def pack_backend():
 def upload():
     version = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     execute(pack_backend)
-    put('/tmp/backend.tar.gz', PROJECT)
+    put('/tmp/backend.tar.gz', PRJ_NAME)
     run(f'''
-        cd {PROJECT}
+        cd {PRJ_NAME}
         mkdir app-{version}
         tar -C app-{version} -xf backend.tar.gz
         ln -snf app-{version} app
@@ -65,11 +66,12 @@ def upload():
 
 def restart():
     run(f'''
-        docker stop -t 10 {PROJECT}-http
-        docker rm {PROJECT}-http || true
-        cd {PROJECT}
-        docker run -d --name {PROJECT}-http -e CONFIG=/data/config.py \\
+        docker stop -t 10 {PRJ_NAME}-http
+        docker rm {PRJ_NAME}-http || true
+        cd {PRJ_NAME}
+        docker run -d --name {PRJ_NAME}-http -e CONFIG=/data/config.py \\
                    -v $PWD/app:/app -v $PWD/data:/data -w /app -u $UID \\
-                   {PROJECT}:`cat app/image_hash` uwsgi --ini /app/uwsgi.ini
-        docker logs --tail 10 {PROJECT}-http
+                   {PRJ_NAME}:`cat app/image_hash` uwsgi --ini /app/uwsgi.ini
+        sleep 3
+        docker logs --tail 10 {PRJ_NAME}-http
     ''')
