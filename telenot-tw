@@ -1,0 +1,91 @@
+#!/usr/bin/python3
+import sys
+import os.path
+import json
+import netrc
+
+from datetime import datetime, timezone, timedelta
+from urllib import request
+from urllib.parse import urlencode
+
+opener = request.OpenerDirector()
+opener.add_handler(request.HTTPHandler())
+opener.add_handler(request.HTTPSHandler())
+
+
+class Msg(str):
+    pass
+
+
+def get_local_time(dtstr):
+    utc_dt = datetime.strptime(dtstr, '%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)
+    return datetime.fromtimestamp(utc_dt.timestamp())
+
+
+def call(method, **params):
+    params = urlencode([(k, v) for k, v in params.items() if v is not None])
+    req = request.Request(f'{HOST}/{method}?{params}',
+                          method='POST',
+                          headers={'X-Api-Key': API_KEY})
+    resp = opener.open(req)
+    assert resp.status == 200, (resp.status, resp.read())
+    return json.loads(resp.read())['result']
+
+
+def process(data):
+    if data['status'] in ('completed', 'done'):
+        return
+
+    if not data.get('scheduled'):
+        return
+
+    now = datetime.now()
+    sdate = get_local_time(data['scheduled'])
+    if sdate < now:
+        return
+
+    message = f'{data["description"]} at {sdate}'
+
+    if data.get('remind'):
+        rdate = get_local_time(data['remind'])
+    else:
+        if sdate.hour < 9:
+            rdate = sdate - timedelta(hours=12).replace(hour=21, minute=0)
+        if sdate.hour < 11:
+            rdate = sdate.replace(hour=8, minute=0)
+        else:
+            rdate = sdate.replace(hour=9, minute=0)
+
+    rdate = int(rdate.timestamp())
+    if data.get('telenot_id'):
+        call('reminder/update', id=data['telenot_id'], at=rdate, message=message)
+    else:
+        data['telenot_id'] = call('reminder/add', at=rdate, message=message)
+
+    return data
+
+
+if __name__ == '__main__':
+    cfg = netrc.netrc().authenticators('telenot-tw')
+    if not cfg:
+        print('You must provide entry in .netrc: machine telenot-tw login http://server:port password APIKEY')
+        sys.exit(1)
+
+    HOST, _, API_KEY = cfg
+
+    name = os.path.basename(sys.argv[0])
+    if name.startswith('on-modify'):
+        lines = sys.stdin.readlines()[-1:]
+    else:
+        lines = sys.stdin.readlines()
+
+    data = [json.loads(r) for r in lines]
+
+    for r in data:
+        out = process(r)
+        if out is None:
+            out = r
+        if isinstance(out, Msg):
+            print(out)
+        else:
+            print(json.dumps(out, ensure_ascii=False))
