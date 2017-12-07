@@ -18,6 +18,9 @@ def test_create_get_and_complete_reminders(dbsession):
     assert r1.notify_at == 101
     assert r1.message == 'foo'
 
+    assert reminder.get_future_notifications(1, 50) == [r1]
+    assert reminder.get_future_notifications(2, 210) == []
+
     assert reminder.get_ready_to_notificate(50) == []
     assert reminder.get_ready_to_notificate(110) == [r1]
     assert reminder.get_ready_to_notificate(210) == [r1, r2]

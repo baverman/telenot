@@ -133,6 +133,8 @@ def handle_update(update):
         handle_remind(msg, user_id, chat_id, rest)
     elif cmd == '/apikey':
         handle_apikey(msg, user_id, chat_id, rest)
+    elif cmd == '/list':
+        handle_list(msg, user_id, chat_id, rest)
     else:
         log.info('Unknown update %r', update)
 
@@ -167,3 +169,19 @@ def handle_remind(msg, user_id, chat_id, text):
 def handle_apikey(msg, user_id, chat_id, text):
     apikey = auth.make_apikey(user_id)
     send_message(chat_id, 'Your api key is {}'.format(apikey))
+
+
+def handle_list(msg, user_id, chat_id, text):
+    reminders = reminder.get_future_notifications(user_id)
+    if not reminder:
+        send_message(chat_id, "It's empty, go away")
+
+    tz_name = reminder.get_user_timezone(user_id) or 'Europe/Moscow'
+    tz = pytz.timezone(tz_name)
+
+    out = []
+    for r in reminders:
+        notify_at = pytz.utc.localize(datetime.utcfromtimestamp(r.notify_at)).astimezone(tz)
+        out.append(f'* {notify_at}: {r.message}')
+
+    send_message(chat_id, '\n'.join(out))

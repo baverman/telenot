@@ -37,6 +37,13 @@ def get_ready_to_notificate(now=None, threshold=600):
             .filter(Reminder.notify_at.between(now - threshold, now))).all()
 
 
+def get_future_notifications(user_id, now=None):
+    now = now or time.time()
+    return (session.query(Reminder)
+            .filter_by(user_id=user_id, status=Status.PENDING)
+            .filter(Reminder.notify_at > now)).all()
+
+
 def complete(reminder_ids, commit=True):
     if not reminder_ids:
         return
