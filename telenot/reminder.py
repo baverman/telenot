@@ -34,14 +34,16 @@ def get_ready_to_notificate(now=None, threshold=600):
     now = now or time.time()
     return (session.query(Reminder)
             .filter_by(status=Status.PENDING)
-            .filter(Reminder.notify_at.between(now - threshold, now))).all()
+            .filter(Reminder.notify_at.between(now - threshold, now))
+            .order_by('notify_at', 'id')).all()
 
 
 def get_future_notifications(user_id, now=None):
     now = now or time.time()
     return (session.query(Reminder)
             .filter_by(user_id=user_id, status=Status.PENDING)
-            .filter(Reminder.notify_at > now)).all()
+            .filter(Reminder.notify_at > now)
+            .order_by('notify_at', 'id')).all()
 
 
 def complete(reminder_ids, commit=True):
