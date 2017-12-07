@@ -4,9 +4,8 @@ services:
     build: ./docker
     ports:
      - "5000:5000"
+    user: $USER_ID
     volumes:
      - .:/app
     working_dir: /app
-    environment:
-        LANG: "C.UTF-8"
     command: uwsgi --ini /app/uwsgi.ini

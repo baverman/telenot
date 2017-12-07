@@ -1,0 +1,10 @@
+[Unit]
+Description = Starting telenot
+
+[Service]
+User=bobrov
+Group=bobrov
+ExecStart = /usr/bin/docker restart telenot-http
+
+[Install]
+WantedBy = multi-user.target

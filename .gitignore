@@ -2,5 +2,5 @@
 /.cache
 /*.db
 /settings/local.py
-/image_hash
+/image.hash
 /*.http
