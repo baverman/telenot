@@ -52,3 +52,8 @@ def remind_update(user_id, reminder_id, at, message):
 def remind_update(user_id, reminder_id):
     reminder.delete(user_id, reminder_id)
     return {'result': 'ok'}
+
+
+@app.api('/health-check')
+def health_check():
+    return {'result': 'ok'}
