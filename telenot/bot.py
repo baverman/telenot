@@ -115,7 +115,7 @@ def handle_updates(updates):
 
 
 def handle_update(update):
-    msg = update.get('message', {})
+    msg = update.get('message') or update.get('edited_message') or {}
     text = msg.get('text', '')
     user_id = msg['from']['id']
     chat_id = msg['chat']['id']
@@ -153,7 +153,12 @@ def handle_remind(msg, user_id, chat_id, text):
     if not text:
         return
 
-    is_relative, day, tm, message = parse_reminder(text)
+    try:
+        is_relative, day, tm, message = parse_reminder(text)
+    except ValueError:
+        send_message(chat_id, 'Invalid command syntax: `[+]day[.month] hour[:minutes] text`',
+                     parse_mode='Markdown')
+        return
 
     tz_name = reminder.get_user_timezone(user_id) or 'Europe/Moscow'
     tz = pytz.timezone(tz_name)
@@ -173,8 +178,9 @@ def handle_apikey(msg, user_id, chat_id, text):
 
 def handle_list(msg, user_id, chat_id, text):
     reminders = reminder.get_future_notifications(user_id)
-    if not reminder:
+    if not reminders:
         send_message(chat_id, "It's empty, go away")
+        return
 
     tz_name = reminder.get_user_timezone(user_id) or 'Europe/Moscow'
     tz = pytz.timezone(tz_name)
