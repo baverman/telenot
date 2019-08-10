@@ -1,11 +1,11 @@
 # Base image with os requirements
 # ===============================
-FROM alpine:3.7 as base
+FROM alpine:3.10.1 as base
 
 ENV LANG=C.UTF-8
 RUN apk update \
- && apk add python3 libffi openssl ca-certificates pcre wget sqlite \
- && ln -sf /usr/bin/python3.6 /usr/bin/python
+ && apk add python3 libffi openssl ca-certificates pcre wget sqlite busybox-extras \
+ && ln -sf /usr/bin/python3.7 /usr/bin/python
 
 
 # Build tools, dependencies and python packages
@@ -22,5 +22,5 @@ RUN pip3 install --prefix=/pypkg -r requirements.txt
 FROM base
 
 ENV PATH=/pypkg/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
-    PYTHONPATH=/pypkg/lib/python3.6/site-packages
+    PYTHONPATH=/pypkg/lib/python3.7/site-packages
 COPY --from=deps /pypkg /pypkg

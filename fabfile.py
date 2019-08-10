@@ -7,8 +7,10 @@ PROJECT = 'telenot'
 HTTP_PORT = 5000
 CONFIG = '/data/config.py'
 
+PYTHON = 'python'
+
 # Workaround for true container OSes, like CoreOS.
-PYTHON = 'docker run --rm -u $UID:$GROUPS -v /:/mnt -w /mnt$PWD -it frolvlad/alpine-python3 python'
+# PYTHON = 'docker run --rm -u $UID:$GROUPS -v /:/mnt -w /mnt$PWD -it frolvlad/alpine-python3 python'
 
 if not env.hosts:
     env.hosts = ['pg.remote']
